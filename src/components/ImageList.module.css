@@ -1,0 +1,15 @@
+.imageList {
+}
+
+.list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    list-style: none;
+}
+
+.item {
+    margin: 1em 1em 0 1em;
+}
+
