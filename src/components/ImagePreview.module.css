@@ -1,0 +1,21 @@
+.imagePreview {
+    width: 150px;
+    display: inline-block;
+}
+
+.image {
+    width: 150px;
+    height: 150px;
+    background: transparent no-repeat center;
+    background-size: contain;
+}
+
+.description {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 30px;
+    height: 30px;
+}
+
