@@ -2,29 +2,16 @@ import React, { Component } from 'react';
 
 import ImageList from './components/ImageList';
 import FileChooserButton from './components/FileChooserButton';
+import Loading from './components/Loading';
 
-const defaultImages = [
-    {
-        id: 'one',
-        url: '/assets/tmp/3004055302_fc648f2767_q.jpg',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    },
-    {
-        id: 'two',
-        url: '/assets/tmp/7421840342_bcabc0cfe9_q.jpg',
-    },
-    {
-        id: 'three',
-        url: '/assets/tmp/7666068344_3152e694eb_q.jpg',
-        description: 'Regular fish',
-    },
-];
+import style from './App.module.css';
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            images: [].concat(defaultImages),
+            images: [],
+            loading: false,
         };
 
         this._addImages = this._addImages.bind(this);
@@ -32,27 +19,47 @@ class App extends Component {
 
     render() {
         return (
-          <div className="App">
-              <div><FileChooserButton onChoice={this._addImages}>{'Choose files'}</FileChooserButton></div>
-              <ImageList images={this.state.images}/>
-          </div>
+            <div>
+                {this.state.loading && <div className={style.loading}><Loading /></div>}
+                {!this.state.loading &&
+                    <>
+                        <div><FileChooserButton onChoice={this._addImages}>{'Choose files'}</FileChooserButton></div>
+                        <ImageList images={this.state.images}/>
+                    </>}
+            </div>
         );
     }
 
+    componentDidMount() {
+        this.setState({loading: true}, async () => {
+            const images = await retrieveImages();
+            this.setState({
+                images,
+                loading: false
+            });
+        });
+    }
+
     async _addImages(e) {
+        const prefix = `image-${Date.now()}-`;
         const images = [];
+        let index = 0;
         for (const file of Array.from(e.target.files)) {
             try {
-                images.push(await readFile(file));
+                const id = prefix + index;
+                images.push({
+                    id,
+                    url: await readFile(file),
+                });
+                uploadImage(id, file);
             } catch(e) {} //empty
+            finally {
+                index++;
+            }
         }
 
-        const prefix = `image-${Date.now()}-`;
         this.setState({
-            images: images.map((image, index) => ({
-                id: prefix + index,
-                url: image,
-            })).concat(this.state.images),
+            images: images.concat(this.state.images),
         })
     }
 }
@@ -68,6 +75,25 @@ function readFile(file) {
         });
         reader.readAsDataURL(file);
     });
+}
+
+function uploadImage(id, file) {
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('image', file);
+
+    return fetch('/api/images', {
+        method: 'POST',
+        body: formData,
+    });
+}
+
+async function retrieveImages() {
+    const response = await fetch('/api/images');
+    if (!response.ok) {
+        throw new Error('Could not retrieve images from the server');
+    }
+    return response.json();
 }
 
 export default App;

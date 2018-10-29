@@ -1,0 +1,6 @@
+.loading {
+    display: inline-block;
+    width: 200px;
+    height: 200px;
+    background: transparent url('./Spinner-1s-200px.gif') no-repeat center;
+}
