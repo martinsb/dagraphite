@@ -9,6 +9,12 @@
 # production
 /build
 
+# uploaded files
+/public/tmp
+
+# local sqlite db file
+/server/dagraphite.db
+
 # misc
 .DS_Store
 .env.local
