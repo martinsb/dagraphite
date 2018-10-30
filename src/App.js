@@ -1,10 +1,15 @@
-import React, { Component } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
+import ReactDOM from 'react-dom';
+
 
 import ImageList from './components/ImageList';
 import FileChooserButton from './components/FileChooserButton';
 import Loading from './components/Loading';
+import Dialog from './components/Dialog';
 
 import style from './App.module.css';
+
+const ImageEditor = lazy(() => import('./components/ImageEditor'));
 
 class App extends Component {
     constructor(props) {
@@ -12,9 +17,13 @@ class App extends Component {
         this.state = {
             images: [],
             loading: false,
+            currentId: undefined,
         };
 
         this._addImages = this._addImages.bind(this);
+        this._openOrCloseImage = this._openOrCloseImage.bind(this);
+        this._closeImage = this._closeImage.bind(this);
+        this._updateDescription = this._updateDescription.bind(this);
     }
 
     render() {
@@ -27,6 +36,14 @@ class App extends Component {
                         {!!this.state.images.length && <ImageList images={this.state.images}/>}
                         {!this.state.images.length && <p>{'There are no images added'}</p>}
                     </>}
+                {this.state.currentId &&
+                    ReactDOM.createPortal(
+                        <Dialog onClose={this._closeImage} width={300} height={400}>
+                            <Suspense fallback={'Loading...'}>
+                                <ImageEditor id={this.state.currentId} onSave={this._updateDescription}/>
+                            </Suspense>
+                        </Dialog>
+                    , document.body)}
             </div>
         );
     }
@@ -39,6 +56,19 @@ class App extends Component {
                 loading: false
             });
         });
+
+        //A little cheat just demonstration purposes.
+        //We don't want to deal with single image loading upon application load,
+        //thus just redirect the app to the "index" location
+        if (window.location.hash) {
+            window.location.href = '/';
+        }
+
+        window.addEventListener('hashchange', this._openOrCloseImage, false);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('hashchange', this._openOrCloseImage, false);
     }
 
     async _addImages(e) {
@@ -62,6 +92,42 @@ class App extends Component {
         this.setState({
             images: images.concat(this.state.images),
         })
+    }
+
+    _openOrCloseImage() {
+        let imageId = window.location.hash;
+        if (imageId.startsWith('#')) {
+            imageId = imageId.substring(1);
+        }
+
+        this.setState({
+            currentId: imageId || undefined,
+        });
+    }
+
+    _closeImage() {
+        window.location.href = '#';
+    }
+
+    _updateDescription({description}) {
+        const {images, currentId} = this.state;
+        if (!currentId) {
+            throw new Error('No image is currently being edited');
+        }
+        const index = images.findIndex(({id}) => id === currentId);
+        if (index === -1) {
+            throw new Error(`No image with such id was found: ${currentId}`);
+        }
+
+        const nextImages = [].concat(images);
+        nextImages[index] = Object.assign({}, nextImages[index], {description});
+        this.setState({
+            images: nextImages,
+        });
+
+        //this will trigger `_openOrCloseImage` which will, well, close the dialog because
+        //there will be actually no image id
+        window.location.href = '#';
     }
 }
 

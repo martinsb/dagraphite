@@ -21,7 +21,9 @@ export default class ImageList extends PureComponent {
                 <ul className={style.list}>
                     {this.props.images.map((image) => (
                         <li key={`image-${image.id}`} className={style.item}>
-                            <ImagePreview {...image} />
+                            <a href={`#${image.id}`}>
+                                <ImagePreview {...image} />
+                            </a>
                         </li>
                     ))}
                 </ul>

@@ -12,9 +12,16 @@ class Storage {
         return this._db.runAsync('INSERT INTO images (id, file_path, description) VALUES (?, ?, ?)', [id, file, description]);
     }
 
+    updateImage(id, {description}) {
+        return this._db.runAsync('UPDATE images SET description=? WHERE id=?', [description, id]);
+    }
+
     async getImage(id) {
         const row = await this._db.getAsync('SELECT id, file_path, description FROM images WHERE id=?', [id]);
-        mapImageRow(row);
+        if (row) {
+            return mapImageRow(row);
+        }
+        return null;
     }
 
     async getAllImages() {

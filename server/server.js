@@ -59,6 +59,40 @@ app.get('/api/images', async function(req, res, next) {
     }
 });
 
+app.get('/api/images/:id', async function(req, res, next) {
+    try {
+        const image = await storage.getImage(req.params.id);
+        if (!image) {
+            res.status(404).send('Image not found');
+            return;
+        }
+        res.status(200).json({
+            id: image.id,
+            url: '/' + image.file,
+            description: image.description,
+        });
+    } catch (e) {
+        console.error('Could not fetch single image', e);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.patch('/api/images/:id', async function(req, res, next) {
+    try {
+        const image = await storage.getImage(req.params.id);
+        if (!image) {
+            res.status(404).send('Image not found');
+            return;
+        }
+        const description = req.body.description || '';
+        await storage.updateImage(image.id, {description});
+        res.status(200).end();
+    } catch (e) {
+        console.error('Could not update image', e);
+        res.status(500).send('Internal server error');
+    }
+});
+
 app.post('/api/images', upload.single('image'), async function(req, res, next) {
     const {id} = req.body;
     if (!id) {
