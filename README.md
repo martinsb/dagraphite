@@ -1,3 +1,21 @@
+# Dagraphite photo library
+
+This is a toy project created as a demonstration of core React concepts for Riga Facebook Developer Circles workshop on React.
+
+To launch the app:
+
+- install [Node](https://nodejs.org/en/), preferrably current LTS version, and [Yarn](https://yarnpkg.com/en/);
+- clone this repository: `git clone git@github.com:martinsb/dagraphite.git dagraphite`
+- `cd dagraphite`
+- `yarn` to install all dependencies
+- `yarn start`
+
+Two processes should be launched at once: 1) the `react-scripts start` (client side/React code builder) and 2) `node server/server` (server-side backend)
+
+To stop the app just press `ctrl/cmd+c` in your command line window.
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>
